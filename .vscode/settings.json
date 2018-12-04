@@ -1,3 +1,4 @@
 {
-    "go.gopath": "/home/mostafatalebi/go_projects/"
+    "go.gopath": "/home/mostafatalebi/go_projects/",
+    "go.goroot": "/usr/local/src/go/"
 }

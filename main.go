@@ -1,9 +1,10 @@
 package main
 
-import (
-	app "api/app"
-)
-
 func main() {
-	app.Start()
+	var app App
+	app.Init()
+	methods := []string{"GET"}
+	ctrl := UserController{}
+	app.Router.addRouteItem("/user/add", ctrl.postAdd, methods)
+	app.Listen(":6002")
 }
