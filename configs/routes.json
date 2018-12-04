@@ -1,6 +1,0 @@
-{
-    "/users/add"  : {
-        "methods" : ["GET", "POST"],
-        "handler" : "something"
-    }
-}

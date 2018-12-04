@@ -1,0 +1,18 @@
+version: "3"
+
+services:
+  goapi_redis:
+    image: redis:latest
+    ports: 
+      - "6301:6379"
+    networks:
+      - goapi_ntw
+    container_name: goapi_redis_container
+    restart: always
+    volumes:
+      - "goapi_redis_db:/data"
+volumes:
+  goapi_redis_db:
+networks:
+  goapi_ntw:
+    driver: bridge

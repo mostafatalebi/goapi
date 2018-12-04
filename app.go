@@ -68,9 +68,9 @@ func (app *App) Init() {
 }
 
 //Listen starts the server
-func (app *App) Listen(addr string) {
+func (app *App) Listen(addr string) error {
 	app.bindRoutes(app.Router.RouteColl)
-	http.ListenAndServe(addr, app.Router.HttpRoutes)
+	return http.ListenAndServe(addr, app.Router.HttpRoutes)
 }
 
 func (app *App) exit(msg string) {
