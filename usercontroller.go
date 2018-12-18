@@ -9,16 +9,48 @@ type UserController struct {
 
 func (ctrl *UserController) postAdd(resp http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
-	firstName := req.PostForm.Get("first_name")
-	if len(firstName) > 0 {
+	username := req.PostForm.Get("username")
+	password := req.PostForm.Get("password")
+	passwordConfirm := req.PostForm.Get("password_confirm")
+	response := Response{}
+	UVal := UserValidation{}
+	UVal.Validator.Required("username", "password", "password_confirm")
+
+	if UVal.Validator.HasRequiredFields(&req.PostForm) == false {
+		response.SetMessage(UVal.Validator.LastError())
+		resp.WriteHeader(HTTP_BAD_REQUEST)
+		respJSON, _ := response.ToJSONString()
+		resp.Write(respJSON)
+		return
+	}
+
+	UVal.Min(4).Max(32).UserName(username)
+	UVal.Min(6).Max(32).Password(password)
+	UVal.Compare(password, passwordConfirm)
+
+	if UVal.Succeed() {
 		rda := Model{}
-		res := rda.TTL(100).Save("user_"+firstName, firstName)
+		rda.SetEngine(engineRedis)
+		res := rda.TTL(100).Save("user_"+username, username)
 		if res {
-			resp.Write([]byte("Error saving the user."))
+			response.SetStatus(true)
+			response.SetMessage("User added successfully")
+			response.SetData("")
+			respJSON, _ := response.ToJSONString()
+			resp.Write(respJSON)
+			return
 		}
-		resp.Write([]byte("User added successfully."))
+		response.SetStatus(false)
+		response.SetMessage("Failed to insert user into storage")
+		response.SetData("")
+		respJSON, _ := response.ToJSONString()
+		resp.Write(respJSON)
+		return
 
 	} else {
-		resp.Write([]byte("Fields incomplete."))
+		response.SetMessage(UVal.Validator.LastError())
+		response.SetStatus(false)
+		respJSON, _ := response.ToJSONString()
+		resp.Write(respJSON)
 	}
 }

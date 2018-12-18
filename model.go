@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 )
 
@@ -15,9 +16,8 @@ type Storage interface {
 	Save(key string, val string) bool
 	SaveWithTTL(key string, val string, ttl int) bool
 	Read(key string) string
-	Del(key string) bool
-	Exists(key string) bool
-	TTL(ttl int)
+	Del(key string) int
+	//Exists(key string) bool
 }
 
 //Model a set of funcs which makes it easy to work with data writing and reading
@@ -32,7 +32,7 @@ type Model struct {
 //If you want just to use it once, then set it back to 0
 //after you usage.
 //For ease of use, you can right after calling  this method,
-//call another method of the Model. Method chaining.
+//call another method of the Model. Method
 func (m *Model) TTL(ttl int) *Model {
 	m.ttl = ttl
 	return m
@@ -53,9 +53,9 @@ func (m *Model) Save(args ...string) bool {
 		key = args[0]
 		val = args[1]
 	}
-	// if m.ttl != 0 {
-	// 	return m.getEngine().SaveWithTTL(key, val, m.ttl)
-	// }
+	if m.ttl != 0 {
+		return m.getEngine().SaveWithTTL(key, val, m.ttl)
+	}
 	return m.getEngine().Save(key, val)
 }
 
@@ -68,6 +68,27 @@ func (m *Model) getEngine() Storage {
 		return m.redis
 		break
 	}
+	log.Panic("Cannot find a proper storage engine. Process abroted.")
 	os.Exit(1)
 	return nil
+}
+
+func (m *Model) createEngineObject() {
+	switch m.current {
+	// case engineMongo:
+	// 	// @todo for Mongo adapter
+	// 	m.mongo = Storage{}
+	// 	return
+	case engineRedis:
+		m.redis = NewRedis()
+		return
+	}
+	log.Panic("Cannot find a proper storage engine. Process abroted.")
+	os.Exit(1)
+}
+
+func (m *Model) SetEngine(engineCode int) *Model {
+	m.current = engineCode
+	m.createEngineObject()
+	return m
 }
